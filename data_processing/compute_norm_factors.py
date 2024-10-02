@@ -87,19 +87,41 @@ def task(i):
 
     if i == 0: print("first sample in ds = ", ds['state_t'][0][0])
 
+    L_var_i = []
+    for var in vars_mli:
+        arr = np.array(ds[var])
+        if len(arr.shape) == 3:
+            arr = arr.transpose((2,0,1))
+        else:
+            arr = arr.transpose((1,0))
 
-    # stack all the variables together (1 lev = 1 var)
-    ds = ds.stack({'batch':{'ncol', 'time_counter'}})
-    ds = ds.to_stacked_array("mlvar", sample_dims=["batch"], name='mli')
-    dso = dso.stack({'batch':{'ncol', 'time_counter'}})
-    dso = dso.to_stacked_array("mlvar", sample_dims=["batch"], name='mlo')
+        arr = arr.reshape((file_per_npy*ncol, -1), order = 'F')
 
-    if i == 0: print("first sample in da = ", ds['mlvar'][0])
+        L_var_i.append(arr)
+
+    
+    ds_np = np.concatenate(L_var_i, axis = 1)
+
+    L_var_o = []
+    for var in vars_mlo:
+        arr = np.array(dso[var])
+        if len(arr.shape) == 3:
+            arr = arr.transpose((2,0,1))
+        else:
+            arr = arr.transpose((1,0))
+
+        arr = arr.reshape((file_per_npy*ncol, -1), order = 'F')
+
+        L_var_o.append(arr)
+
+    
+    dso_np = np.concatenate(L_var_o, axis = 1)
+
 
 
     # convert to numpy array
-    ds = np.array(ds)
-    dso = np.array(dso)
+    ds = ds_np
+    dso = dso_np
 
     if i == 0: print("shape = ", ds.shape, " first sample in na = ", ds[:4,:4])
 
@@ -245,9 +267,9 @@ def prepro():
     col2_mean_glob_o = col2_sum_glob_o/(n_samples*60)
 
     if resolution == 'high':
-            path = '/gpfswork/rech/psl/upu87pm/_hyrid_climate_modelling_/data_processing/normalization_factors/' + name_processing
+            path = 'normalization_factors/' + name_processing
     else:
-        path = '/gpfswork/rech/psl/upu87pm/_hyrid_climate_modelling_/data_processing/normalization_factors/' + name_processing
+        path = 'normalization_factors/' + name_processing
 
     if not os.path.exists(path):
         os.makedirs(path)
@@ -281,8 +303,8 @@ def prepro():
     print("everything saved at ", path)
 
 
-resolution = 'high'
-name_processing = 'all_stride_349_test'
+resolution = 'low'
+name_processing = 'dataset_stride_7'
 
 #test0 => test stride
 #test_all => test all
@@ -292,14 +314,33 @@ name_processing = 'all_stride_349_test'
 #all_stride_349_test => with a shift of  177
 
 #the fraction of file taken: 1/stride
-stride = 349
-shift = 177
+stride = 7
+shift = 0
+cut = 236520
+
+#the number of cpus -> number of files at the end
+n_npy = 80
 
 name_ = ''
 if resolution == 'high':
     name_ = 'hr_'
 
+#6 for lr
+nodes = 6
+
 rank = 0
+
+if len(sys.argv) < 2:
+    print("missing arguments: you should specify the rank as an argument !")
+    sys.exit(0)
+
+rank = int(sys.argv[1])    
+if rank >= nodes:
+    print("specified rank is too high ! Only ", nodes, " are availables")
+    sys.exit()
+    
+print ("rank ", rank, " is running !")
+
 
 if resolution == 'high':
     ncol = 21600
@@ -317,17 +358,14 @@ if not os.path.exists(save_dir):
 
 
 all_path_list = sorted(all_path_list)
+all_path_list = all_path_list[:cut]
 all_path_list = all_path_list[shift:]
 all_path_list = all_path_list[::stride]
 
 
-#the number of cpus -> number of files at the end
-n_npy = 80
 
-print("rank = ", rank)
 
-#6 for lr
-nodes = 1
+
 print("total amount of file available: ", len(all_path_list))
 
 list_file = all_path_list
