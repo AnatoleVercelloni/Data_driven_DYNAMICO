@@ -267,9 +267,9 @@ def prepro():
     col2_mean_glob_o = col2_sum_glob_o/(n_samples*60)
 
     if resolution == 'high':
-            path = 'normalization_factors/' + name_processing
+            path = '../saved/normalization_factors/hr/' + name_processing
     else:
-        path = 'normalization_factors/' + name_processing
+        path = '../saved/normalization_factors/lr/' + name_processing
 
     if not os.path.exists(path):
         os.makedirs(path)
@@ -325,16 +325,23 @@ name_ = ''
 if resolution == 'high':
     name_ = 'hr_'
 
-#6 for lr
-nodes = 6
 
-rank = 0
 
-if len(sys.argv) < 2:
-    print("missing arguments: you should specify the rank as an argument !")
+if len(sys.argv) < 3:
+    print("missing arguments.. you should specify two argument: number_of_nodes rank")
     sys.exit(0)
 
-rank = int(sys.argv[1])    
+#6 for lr
+nodes = int(sys.argv[1])
+if nodes < 1:
+    print("specified number of nodes is not valid! It has to be greater than 0!")
+    sys.exit()
+elif  nodes >=8:
+    print("specified number of nodes is not valid! less than 8 is enough, keep it easy!")
+    sys.exit()
+
+
+rank = int(sys.argv[2])    
 if rank >= nodes:
     print("specified rank is too high ! Only ", nodes, " are availables")
     sys.exit()

@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 path = '/gpfswork/rech/psl/upu87pm/_hyrid_climate_modelling_/data_processing/normalization_factors/all_low_res/'
 nodes = 6
