@@ -165,4 +165,5 @@ cython_debug/
 #my additionnal
 *.out
 *.err
+*.npy
 saved/

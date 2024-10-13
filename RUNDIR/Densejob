@@ -1,0 +1,25 @@
+#!/bin/bash
+##SBATCH -A psl@a100
+#SBATCH -A psl@v100
+#SBATCH -C v100
+#SBATCH --job-name=training_dense          # nom du job
+#SBATCH --nodes=1 #---------------------------------------- 1 node
+#SBATCH --ntasks=1 #--------------------------------------- 2 tasks / 2 workers
+#SBATCH --gres=gpu:1 #------------------------------------- 2 gpus per node
+#SBATCH --cpus-per-task=40
+#SBATCH --hint=nomultithread 
+#SBATCH --time=00:20:00
+#SBATCH --output=train_Dense_0__.out      # nom du fichier de sortie
+#SBATCH --error=train_Dense_0__.err       # nom du fichier d'erreur (ici commun avec la sortie)
+#SBATCH --qos=qos_gpu-dev
+ 
+module purge
+#module load cpuarch/amd
+source ../arch.env
+
+set -x
+unset http_proxy HTTP_PROXY https_proxy HTTPS_PROXY
+
+srun python3 -u ../NeuralNetworks/Dense.py
+
+date

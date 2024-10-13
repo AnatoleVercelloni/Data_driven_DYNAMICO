@@ -26,7 +26,7 @@ lev      = 60
 scalar_idx = list(range(6*60,6*60+16))
 col_idx    = list(range(6*60)) + list(range(6*60+16, 556))
 
-print("for ", len(scalar_idx), " scalar values and ", len(col_idx), "col values")
+# print("for ", len(scalar_idx), " scalar values and ", len(col_idx), "col values")
 
 
 # first normalization of the values (one per one)
@@ -85,7 +85,7 @@ def task(i):
     dso['ptend_v']     = (dso['state_v']     - ds['state_v'])/1200     # Q tendency [kg/kg/s]
     dso = dso[vars_mlo]
 
-    if i == 0: print("first sample in ds = ", ds['state_t'][0][0])
+    # if i == 0: print("first sample in ds = ", ds['state_t'][0][0])
 
     L_var_i = []
     for var in vars_mli:
@@ -123,11 +123,11 @@ def task(i):
     ds = ds_np
     dso = dso_np
 
-    if i == 0: print("shape = ", ds.shape, " first sample in na = ", ds[:4,:4])
+    #if i == 0: print("shape = ", ds.shape, " first sample in na = ", ds[:4,:4])
 
 
-    if i == 0: print("input shape  ", ds.shape)
-    if i == 0: print("output shpae ", dso.shape)
+    #if i == 0: print("input shape  ", ds.shape)
+    #if i == 0: print("output shpae ", dso.shape)
 
     ds1 = ds
     dso1 = dso
@@ -137,10 +137,10 @@ def task(i):
     # ds1 = ds.reshape((-1,ncol,556),order='F').transpose((1,0,2)).reshape(-1, 556,order='F')
     # dso1 = dso.reshape((-1,ncol,368),order='F').transpose((1,0,2)).reshape(-1, 368,order='F')
 
-    if i == 0: print("shape  ds1 = ", ds1.shape, "first sample in na = ", ds1[:4,:4])
+    #if i == 0: print("shape  ds1 = ", ds1.shape, "first sample in na = ", ds1[:4,:4])
 
 
-    if i == 0: print("shape before compute anything :", ds1.shape)
+    i#f i == 0: print("shape before compute anything :", ds1.shape)
 
     #compute first normalization factors
 
@@ -157,14 +157,14 @@ def task(i):
     col1_min_o = np.min(dso1, axis = 0)
     col1_max_o = np.max(dso1, axis = 0)
 
-    if i == 0: print("shape after first normalization : input = ", col1_sum.shape, "   output = ", col1_sum_o.shape)
+    #if i == 0: print("shape after first normalization : input = ", col1_sum.shape, "   output = ", col1_sum_o.shape)
 
     #compute second normalization factors
 
     ds_col = ds1[:,col_idx].reshape((-1, lev, n_col),order='F')
     ds_col_o = dso1[:,:360].reshape((-1, lev, 6),order='F')
 
-    if i == 0: print("shape ds_col : input = ",  ds_col.shape, " output = ", ds_col_o.shape)
+    #if i == 0: print("shape ds_col : input = ",  ds_col.shape, " output = ", ds_col_o.shape)
 
     #input
     col2_sum = np.sum(ds_col, axis = (0,1))
@@ -172,7 +172,7 @@ def task(i):
     col2_min = np.min(ds_col, axis = (0,1))
     col2_max = np.max(ds_col, axis = (0,1))
 
-    if i == 0: print("mean t = ", col2_sum[0]/(60*384))
+    #if i == 0: print("mean t = ", col2_sum[0]/(60*384))
 
     #output
     col2_sum_o = np.sum(ds_col_o, axis = (0,1))
@@ -180,7 +180,7 @@ def task(i):
     col2_min_o = np.min(ds_col_o, axis = (0,1))
     col2_max_o = np.max(ds_col_o, axis = (0,1))
 
-    if i == 0: print("shape after second normalization : input =  ", col2_sum.shape, "   output = ", col2_sum_o.shape)
+    #if i == 0: print("shape after second normalization : input =  ", col2_sum.shape, "   output = ", col2_sum_o.shape)
 
     np.save(save_dir + '/input_'+str(rank*n_npy + i).rjust(3,'0')+'.npy', ds1)
     np.save(save_dir + '/target_'+str(rank*n_npy + i).rjust(3,'0')+'.npy', dso1)
@@ -304,7 +304,7 @@ def prepro():
 
 
 resolution = 'low'
-name_processing = 'dataset_stride_7'
+name_processing = 'first_dataset'
 
 #test0 => test stride
 #test_all => test all
@@ -312,11 +312,17 @@ name_processing = 'dataset_stride_7'
 #all_stride_97 => all data stride 97
 #test_all_stride_set => with a shift of 3 
 #all_stride_349_test => with a shift of  177
+#first_dataset => 7 first years stride 7
+#scoring_set: last year of data
 
 #the fraction of file taken: 1/stride
 stride = 7
 shift = 0
-cut = 236520
+cut_s = 0 #183960 #210240
+cut_e = 183960 #210240 #183960
+
+#210 240 for the last file
+#183 960 for the 7th tear
 
 #the number of cpus -> number of files at the end
 n_npy = 80
@@ -360,12 +366,13 @@ else:
     all_path_list = glob.glob(os.environ['DSDIR']+"/ClimSim_low-res/train/*/*.mli*.nc")
 
 if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
+        os.makedirs(save_dir, exist_ok=True)
 
 
 
 all_path_list = sorted(all_path_list)
-all_path_list = all_path_list[:cut]
+all_path_list = all_path_list[cut_s:]
+all_path_list = all_path_list[:cut_e]
 all_path_list = all_path_list[shift:]
 all_path_list = all_path_list[::stride]
 
@@ -373,7 +380,7 @@ all_path_list = all_path_list[::stride]
 
 
 
-print("total amount of file available: ", len(all_path_list))
+print("total amount of file processed: ", len(all_path_list))
 
 list_file = all_path_list
 
@@ -383,7 +390,7 @@ file_per_npy = N//n_npy
 
 print("found ", N, " nc files from ",rank*N, " to ", (rank+1)*N, " and put ", file_per_npy, " of them in each npy file for node ", rank) 
 list_file = list_file[rank*N:(rank+1)*N]
-print(" first file is ", list_file[0])
+# print(" first file is ", list_file[0])
 
 
 n_samples = len(list_file)*ncol
@@ -392,3 +399,5 @@ print(n_samples, "samples !")
 
 print("preprocessing all data")
 prepro()
+
+print("To Compute the GLOBAL normalizations factor, run python ../data_processing/glob_factors.py "  + name_processing + " " + str(n_samples))

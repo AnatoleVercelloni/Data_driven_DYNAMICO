@@ -1,6 +1,6 @@
 #!/bin/bash
 
-N=6 #number of job
+N=2 #number of job
 
 for ((i=0;i<$N;i++))
 do
