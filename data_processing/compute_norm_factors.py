@@ -8,6 +8,95 @@ import sys
 
 print("starting computing normalization factors")
 
+
+
+
+if len(sys.argv) < 9:
+    print("missing arguments.. you should specify 6 arguments: dataset_name resolution sride shift first_file last_file number_of_nodes rank")
+    sys.exit(0)
+
+
+name_processing = sys.argv[1]
+resolution      = sys.argv[2]
+stride          = int(sys.argv[3]) 
+shift           = int(sys.argv[4])
+first_file      = int(sys.argv[5])
+last_file       = int(sys.argv[6])
+nodes           = int(sys.argv[7])
+rank            = int(sys.argv[8])    
+
+
+if resolution != 'low' and resolution != 'high':
+    print("wrong resolution! it is either low or high")
+    sys.exit(0)
+
+if stride < 1:
+    print("stride should be a positive integer !")
+    sys.exit(0)
+
+if shift < 0:
+    print("shift should be a non negative integer !")
+    sys.exit(0)
+
+if first_file < 0 or first_file > 210240:
+    print("first_file should be between 0 and 210 240 !")
+    sys.exit(0)
+
+if last_file < 0 or last_file > 210240:
+    print("last_file should be between 0 and 210 240 !")
+    sys.exit(0)
+
+if first_file >= last_file:
+    print(" first_file should be lower than last_file !")
+    sys.exit(0)
+
+if nodes < 1:
+    print("specified number of nodes is not valid! It has to be greater than 0!")
+    sys.exit()
+elif  nodes >=8:
+    print("specified number of nodes is not valid! less than 8 is enough, keep it easy!")
+    sys.exit()
+
+if rank >= nodes:
+    print("specified rank is too high ! Only ", nodes, " are availables")
+    sys.exit()
+    
+print ("rank ", rank, " is running !")
+
+
+#test0 => test stride
+#test_all => test all
+#all_stride_7 => all data stride 7 
+#all_stride_97 => all data stride 97
+#test_all_stride_set => with a shift of 3 
+#all_stride_349_test => with a shift of  177
+#first_dataset => 7 first years stride 7
+#scoring_set: last year of data
+
+#the fraction of file taken: 1/stride
+#shift = 0
+# stride = 1
+# cut_s = 183960 #210240
+# cut_e = 210240 #183960
+
+#210 240 for the last file
+#183 960 for the 7th tear
+
+#the number of cpus -> number of files at the end
+n_npy = 80
+
+
+# if name_processing == 'first_dataset':
+#     stride = 7     # one file over 7
+#     cut_s = 0      # from the begining 
+#     cut_e = 183960 # to the 7th year 
+
+# elif name_processing == 'scoring_set':
+#     stride = 1     # every file
+#     cut_s = 183960 # from the 7th year 
+#     cut_e = 210240 # to the end
+
+
 #556 input scalars
 vars_mli      = ['state_t','state_q0001', 'state_q0002', 'state_q0003', 'state_u', 'state_v',
                      'state_ps', 'pbuf_SOLIN','pbuf_LHFLX', 'pbuf_SHFLX',  'pbuf_TAUX', 'pbuf_TAUY', 'pbuf_COSZRS',
@@ -303,29 +392,6 @@ def prepro():
     print("everything saved at ", path)
 
 
-resolution = 'low'
-name_processing = 'first_dataset'
-
-#test0 => test stride
-#test_all => test all
-#all_stride_7 => all data stride 7 
-#all_stride_97 => all data stride 97
-#test_all_stride_set => with a shift of 3 
-#all_stride_349_test => with a shift of  177
-#first_dataset => 7 first years stride 7
-#scoring_set: last year of data
-
-#the fraction of file taken: 1/stride
-stride = 7
-shift = 0
-cut_s = 0 #183960 #210240
-cut_e = 183960 #210240 #183960
-
-#210 240 for the last file
-#183 960 for the 7th tear
-
-#the number of cpus -> number of files at the end
-n_npy = 80
 
 name_ = ''
 if resolution == 'high':
@@ -333,26 +399,6 @@ if resolution == 'high':
 
 
 
-if len(sys.argv) < 3:
-    print("missing arguments.. you should specify two argument: number_of_nodes rank")
-    sys.exit(0)
-
-#6 for lr
-nodes = int(sys.argv[1])
-if nodes < 1:
-    print("specified number of nodes is not valid! It has to be greater than 0!")
-    sys.exit()
-elif  nodes >=8:
-    print("specified number of nodes is not valid! less than 8 is enough, keep it easy!")
-    sys.exit()
-
-
-rank = int(sys.argv[2])    
-if rank >= nodes:
-    print("specified rank is too high ! Only ", nodes, " are availables")
-    sys.exit()
-    
-print ("rank ", rank, " is running !")
 
 
 if resolution == 'high':
@@ -371,8 +417,8 @@ if not os.path.exists(save_dir):
 
 
 all_path_list = sorted(all_path_list)
-all_path_list = all_path_list[cut_s:]
-all_path_list = all_path_list[:cut_e]
+all_path_list = all_path_list[first_file:]
+all_path_list = all_path_list[:last_file]
 all_path_list = all_path_list[shift:]
 all_path_list = all_path_list[::stride]
 
@@ -393,7 +439,7 @@ list_file = list_file[rank*N:(rank+1)*N]
 # print(" first file is ", list_file[0])
 
 
-n_samples = len(list_file)*ncol
+n_samples = n_npy*file_per_npy*ncol
 
 print(n_samples, "samples !")
 

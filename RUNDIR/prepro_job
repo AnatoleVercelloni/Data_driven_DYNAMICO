@@ -15,5 +15,5 @@ module load python
  
 set -x
 
-srun python3 -u ../data_processing/compute_norm_factors.py $N $rank 
+srun python3 -u ../data_processing/compute_norm_factors.py $name_processing $resolution $stride $shift_ $first_file $last_file $N $rank 
 date

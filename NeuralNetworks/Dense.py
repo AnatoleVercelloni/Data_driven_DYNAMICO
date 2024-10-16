@@ -49,7 +49,7 @@ except:
 
 #Set Debug mode
 DEBUG = False
-num = 0
+num = 1
 print('DEBUG?', DEBUG)
 
 #for reproducibility
@@ -172,10 +172,10 @@ print("using ", len(idx_f), "files for validation set, each of them contains ", 
 epochs = 100
 
 #cosine learning rate
-learning_rate = 1e-3*float(n_workers)
+learning_rate = 1e-3*float(n_workers)/2
 epochs_warmup = 10
 epochs_ending = 2
-steps_per_epoch = int(np.ceil(100 * 100_000 / global_batch_size))
+steps_per_epoch = int(np.ceil(n_samples/global_batch_size))
 
 lr_scheduler = keras.optimizers.schedules.CosineDecay(
     1e-5*float(n_workers), 
@@ -184,6 +184,13 @@ lr_scheduler = keras.optimizers.schedules.CosineDecay(
     warmup_steps=steps_per_epoch * epochs_warmup,
     alpha=0.1
 )
+
+
+plt.plot([lr_scheduler(it) for it in range(0, epochs * steps_per_epoch, steps_per_epoch)])
+plt.xlabel('epochs')
+plt.legend()
+plt.savefig('Dense_lr'+str(num)+'.png')
+plt.clf()
 
 #definition of the model
 with strategy.scope():
@@ -214,7 +221,7 @@ history = model.fit(
 )
 ###
 #0 base => first_dataset + MSE
-#1 => trivial splitting of the data t: 0-50 v: 3=250-260 s: 410-420
+#1 => same than 0 but with lr divided by 2
 #0 => elaborate splitting of the data t:1/7 sample 0-350 v: 1/3 370-400 s: 410-420
 #2 => loss MAE
 #3 => multiple data representation

@@ -8,10 +8,10 @@
 #SBATCH --gres=gpu:1 #------------------------------------- 2 gpus per node
 #SBATCH --cpus-per-task=40
 #SBATCH --hint=nomultithread 
-#SBATCH --time=00:20:00
-#SBATCH --output=train_Dense_0__.out      # nom du fichier de sortie
-#SBATCH --error=train_Dense_0__.err       # nom du fichier d'erreur (ici commun avec la sortie)
-#SBATCH --qos=qos_gpu-dev
+#SBATCH --time=06:00:00
+#SBATCH --output=train_Dense_1.out      # nom du fichier de sortie
+#SBATCH --error=train_Dense_1.err       # nom du fichier d'erreur (ici commun avec la sortie)
+##SBATCH --qos=qos_gpu-dev
  
 module purge
 #module load cpuarch/amd
