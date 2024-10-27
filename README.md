@@ -16,10 +16,13 @@ This repository contains the following directories:
 
     (2) NeuralNetworks  : scripts to define the architectures and train them
         - Dense.py                     => script to train a Dense neural network 
+        - Unetpy                       => script to train a Unet 
 
     (3) evaluation      : notebook to offline evaluate the emulators
         - construc_dataset.py          => script to be able to vizualize data on map
-        - Dense_evaluation.ipynb       => notebook to do anoffline evaluation of the Dense Network
+        - Dense_evaluation.ipynb       => notebook to do an offline evaluation of the Dense Network
+        - Dense_evaluation.ipynb       => notebook to do an offline evaluation of the Unet
+        
 
     (4) BuildGrid       : scripts to be able to create maps of the data
         - folder scvt                  => contains scripts written by Thomas Dubos for Delaunay triangulation and projection
@@ -28,7 +31,8 @@ This repository contains the following directories:
         - Example_Build_Grid.ipynb     => notebook to see how works the mesh construction and to construct it
 
     (5) RUNDIR          : scripts to run the different scripts listed before
-        - Densejob                     => script to train the Dense neural network
+        - Densejob                     => slurm script to train the Dense neural network
+        - Unetjob                      => slurm script to train the Unet
         - prepro_job                   => script to preprocessed the data (not to be used directly)
         - processing.sh                => script to preprocessed the data (call prepro_job)
 
@@ -75,13 +79,13 @@ III. training the emulator
     > cd RUNDIR
     #go to RUNDIR directory
 
-    >./Densejob
+    >./Densejob (or ./Unetjob)
     # run the training of the DenseNeural network
     # it saves the models at each epoch in saved/models/Dense
     # it also generates a png of the learning rate and the loss along the training
 
 IV. offline evaluation
     # the offline evalulation is a notebook since it is more suitable for this task
-    > open and run the notebook Dense_evaluation.ipynb in the folder evaluation
+    > open and run the notebook Dense_evaluation.ipynb (or Unet_evaluation.ipynb) in the folder evaluation
 
 V. online evaluation
